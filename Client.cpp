@@ -45,8 +45,7 @@ EchoClient::SendMessage(string msg)
     char read_buff[1024];
     memset(send_buff, 0, sizeof(send_buff));
     memset(read_buff, 0, sizeof(read_buff));
-    printf("MSG: ");
-    fgets(send_buff, 1024, stdin);
+    strcpy(send_buff, msg.c_str());
 
     if (send (sckt, send_buff, strlen(send_buff), 0) < 0)
         exit_with_errstr("send error");

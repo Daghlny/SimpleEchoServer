@@ -46,7 +46,10 @@ EchoServer::bindServer(int _port)
     if ( (listen(listen_socket_fd, 10)) == -1 ) 
         exit_with_errstr("listen error");
 
-    epfd = epoll_create(0);
+    epfd = epoll_create(10);
+    if (epfd == -1)
+        cout << "epoll_create() error" << " " << strerror(errno) << endl;
+
     pthread_mutex_init( &new_client_q_mutex, NULL );
 
     if ( (pthread_create(&listen_thread, NULL, epoll_main_loop, (void*)this)) != 0 )
@@ -90,7 +93,11 @@ EchoServer::epoll_main_loop(void* arg)
         }
         pthread_mutex_unlock(& (M->new_client_q_mutex));
 
-        int nclients = epoll_wait(M->epfd, _clients, 2, 1000000);
+        int nclients = epoll_wait(M->epfd, _clients, 2, 1000);
+        if (nclients == -1) {
+            printf("epoll_wait has a error: %s(errno: %d)\n", strerror(errno), errno);
+            exit(-1);
+        }
         //printf("epoll_wait return with %d client ready\n", nclients);
 
         for (int i = 0; i < nclients; ++i) 
