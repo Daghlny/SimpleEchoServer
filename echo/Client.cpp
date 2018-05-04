@@ -19,6 +19,10 @@
 using std::string;
 using std::cin;
 
+/* 
+ * connect to the server indicated by [server_ip:_port]
+ * return 0 for OK
+ */
 int
 EchoClient::Connect(string server_ip, int _port)
 {
@@ -38,6 +42,12 @@ EchoClient::Connect(string server_ip, int _port)
     return 0;
 }
 
+/*
+ * sends the message to server, the client must connect to server first
+ * get the respond from server and output it
+ *
+ * return 0 for OK
+ */
 int
 EchoClient::SendMessage(string msg)
 {
@@ -60,6 +70,11 @@ EchoClient::SendMessage(string msg)
     return 0;
 }
 
+/*
+ * closes the connection between client and server
+ *
+ * return 0 for OK
+ */
 int 
 EchoClient::CloseConnect()
 {

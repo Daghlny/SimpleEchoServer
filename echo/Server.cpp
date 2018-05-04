@@ -29,6 +29,9 @@ EchoServer::EchoServer()
 
 }
 
+/*
+ * create a listen socket and bind Server Class to a port
+ */
 int 
 EchoServer::bindServer(int _port)
 {
@@ -43,34 +46,14 @@ EchoServer::bindServer(int _port)
     if ( (bind(listen_socket_fd, (struct sockaddr *)&serveraddr, sizeof(serveraddr))) == -1 )
         exit_with_errstr("bind to port error");
     
-    if ( (listen(listen_socket_fd, 10)) == -1 ) 
-        exit_with_errstr("listen error");
-
-    epfd = epoll_create(10);
-    if (epfd == -1)
-        cout << "epoll_create() error" << " " << strerror(errno) << endl;
-
-    pthread_mutex_init( &new_client_q_mutex, NULL );
-
-    if ( (pthread_create(&listen_thread, NULL, epoll_main_loop, (void*)this)) != 0 )
-        exit_with_errstr("thread create error");
-
-        
-    while (1) {
-        int client_fd = 0;
-        if ( (client_fd = accept(listen_socket_fd, (struct sockaddr*)NULL, NULL)) == -1 ) {
-            printf("accept socket error: %s(errno: %d)", strerror(errno), errno);
-            continue;
-        }
-        printf("Receive a new Client\n");
-        pthread_mutex_lock(&new_client_q_mutex);
-        new_client_fd_q.push(client_fd);
-        pthread_mutex_unlock(&new_client_q_mutex);
-    }
-
 
 }
 
+/*
+ * runs in another thread different with the listening thread
+ * when accepted socket queue is not empty, move it from queue to epfd instance
+ * when a client socket has data to read, read it and send it back with a time stamp
+ */
 void *
 EchoServer::epoll_main_loop(void* arg)
 {
@@ -126,9 +109,37 @@ EchoServer::epoll_main_loop(void* arg)
     return NULL;
 }
 
+/*
+ * starts the server to listen to the _port
+ * everytime accepts a connection from socket, add it into queue
+ */
 int
 EchoServer::start()
 {
+    if ( (listen(listen_socket_fd, 10)) == -1 ) 
+        exit_with_errstr("listen error");
+
+    epfd = epoll_create(10);
+    if (epfd == -1)
+        cout << "epoll_create() error" << " " << strerror(errno) << endl;
+
+    pthread_mutex_init( &new_client_q_mutex, NULL );
+
+    if ( (pthread_create(&listen_thread, NULL, epoll_main_loop, (void*)this)) != 0 )
+        exit_with_errstr("thread create error");
+
+        
+    while (1) {
+        int client_fd = 0;
+        if ( (client_fd = accept(listen_socket_fd, (struct sockaddr*)NULL, NULL)) == -1 ) {
+            printf("accept socket error: %s(errno: %d)", strerror(errno), errno);
+            continue;
+        }
+        printf("Receive a new Client\n");
+        pthread_mutex_lock(&new_client_q_mutex);
+        new_client_fd_q.push(client_fd);
+        pthread_mutex_unlock(&new_client_q_mutex);
+    }
 
 }
 
