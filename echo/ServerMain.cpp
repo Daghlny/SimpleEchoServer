@@ -16,6 +16,7 @@ int main(int argc, char **argv)
 
     EchoServer server;
     server.bindServer(_port);
+    server.start();
     
     return 0;
 }

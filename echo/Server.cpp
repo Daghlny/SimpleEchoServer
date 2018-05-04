@@ -91,6 +91,7 @@ EchoServer::epoll_main_loop(void* arg)
                 int recv_len = recv(_clients[i].data.fd, recv_buff, 1024, 0);
                 if (recv_len < 0) 
                     exit_with_errstr("recv error");
+                /*
                 time_t now_time = time(NULL);
                 tm *real_time = localtime(&now_time);
                 string time_str = to_string(real_time->tm_mon) + "/" + to_string(real_time->tm_mday);
@@ -99,6 +100,8 @@ EchoServer::epoll_main_loop(void* arg)
                 time_str += recv_buff;
                 memset(send_buff, 0, sizeof(send_buff));
                 memcpy(send_buff, time_str.c_str(), time_str.size());
+                */
+                memcpy(send_buff, recv_buff, sizeof(recv_buff));
 
                 if (send(_clients[i].data.fd, send_buff, sizeof(send_buff), 0) == -1)
                     exit_with_errstr("send error");
